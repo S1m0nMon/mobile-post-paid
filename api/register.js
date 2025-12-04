@@ -27,7 +27,13 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Initialize auth - see https://theoephraim.github.io/node-google-spreadsheet/#/guides/authentication
+        // Validate Environment Variables
+        if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEET_ID) {
+            console.error('Missing Environment Variables');
+            throw new Error('Missing required environment variables. Check Vercel Settings.');
+        }
+
+        // Initialize auth
         const serviceAccountAuth = new JWT({
             email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
             key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
@@ -51,6 +57,11 @@ module.exports = async (req, res) => {
         res.status(200).json({ message: 'Successfully registered' });
     } catch (error) {
         console.error('Error saving to Google Sheets:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        // Return detailed error to the client for debugging (remove this in production if sensitive)
+        res.status(500).json({
+            error: 'Internal server error',
+            message: error.message,
+            stack: error.stack
+        });
     }
 };
