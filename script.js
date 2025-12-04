@@ -23,11 +23,15 @@ document.addEventListener('DOMContentLoaded', () => {
             );
     }
 
+    const errorMessage = document.getElementById('error-message');
+
     async function simulateSubmission() {
         // Show loading state
         btnText.style.display = 'none';
         loader.style.display = 'block';
         submitBtn.disabled = true;
+        errorMessage.classList.add('hidden');
+        errorMessage.textContent = '';
 
         const email = emailInput.value;
 
@@ -40,18 +44,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ email }),
             });
 
+            const data = await response.json();
+
             if (response.ok) {
                 form.style.display = 'none';
                 successMessage.classList.remove('hidden');
             } else {
-                alert('Something went wrong. Please try again.');
-                resetButton();
+                showError(data.error || data.details || 'Something went wrong. Please try again.');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Unable to connect to the server. Please ensure the server is running.');
-            resetButton();
+            showError('Unable to connect to the server. Please check your internet connection.');
+        } finally {
+            if (errorMessage.classList.contains('hidden')) {
+                // Only reset if no error shown (success case handles its own UI)
+                // Actually, success hides the form, so we don't need to reset button there.
+                // But if error, we need to reset.
+            }
+            if (!successMessage.classList.contains('hidden')) {
+                // Success state, do nothing
+            } else {
+                resetButton();
+            }
         }
+    }
+
+    function showError(msg) {
+        errorMessage.textContent = msg;
+        errorMessage.classList.remove('hidden');
     }
 
     function resetButton() {
