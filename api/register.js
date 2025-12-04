@@ -1,5 +1,4 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-const { JWT } = require('google-auth-library');
 
 module.exports = async (req, res) => {
     // Enable CORS
@@ -33,16 +32,14 @@ module.exports = async (req, res) => {
             throw new Error('Missing required environment variables. Check Vercel Settings.');
         }
 
-        // Initialize auth
-        const serviceAccountAuth = new JWT({
-            email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-            key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-            scopes: [
-                'https://www.googleapis.com/auth/spreadsheets',
-            ],
-        });
+        // Initialize doc - google-spreadsheet v4 syntax
+        const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
 
-        const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
+        // Auth
+        await doc.useServiceAccountAuth({
+            client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        });
 
         await doc.loadInfo(); // loads document properties and worksheets
 
@@ -57,7 +54,6 @@ module.exports = async (req, res) => {
         res.status(200).json({ message: 'Successfully registered' });
     } catch (error) {
         console.error('Error saving to Google Sheets:', error);
-        // Return detailed error to the client for debugging (remove this in production if sensitive)
         res.status(500).json({
             error: 'Internal server error',
             message: error.message,
