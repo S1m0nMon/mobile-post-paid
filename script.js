@@ -44,17 +44,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ email }),
             });
 
-            const data = await response.json();
+            let data;
+            const contentType = response.headers.get('content-type');
+
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                // Response is not JSON, probably HTML error page
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                showError('Server error: API returned HTML instead of JSON. Check Vercel function configuration.');
+                return;
+            }
 
             if (response.ok) {
                 form.style.display = 'none';
                 successMessage.classList.remove('hidden');
             } else {
-                showError(data.error || data.details || 'Something went wrong. Please try again.');
+                showError(data.error || data.message || data.details || 'Something went wrong. Please try again.');
             }
         } catch (error) {
             console.error('Error:', error);
-            showError('Unable to connect to the server. Please check your internet connection.');
+            showError('Unable to connect to the server: ' + error.message);
         } finally {
             if (errorMessage.classList.contains('hidden')) {
                 // Only reset if no error shown (success case handles its own UI)
