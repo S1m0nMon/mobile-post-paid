@@ -1,7 +1,7 @@
-const { GoogleSpreadsheet } = require('google-spreadsheet');
-const { JWT } = require('google-auth-library');
+import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { JWT } from 'google-auth-library';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -32,12 +32,7 @@ module.exports = async (req, res) => {
             console.error('Missing Environment Variables');
             return res.status(500).json({
                 error: 'Configuration error',
-                message: 'Missing required environment variables. Check Vercel Settings.',
-                details: {
-                    hasEmail: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-                    hasKey: !!process.env.GOOGLE_PRIVATE_KEY,
-                    hasSheetId: !!process.env.GOOGLE_SHEET_ID
-                }
+                message: 'Missing required environment variables. Check Vercel Settings.'
             });
         }
 
@@ -50,7 +45,7 @@ module.exports = async (req, res) => {
             ],
         });
 
-        // Initialize doc - google-spreadsheet v4 syntax with explicit auth
+        // Initialize doc
         const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
 
         await doc.loadInfo(); // loads document properties and worksheets
@@ -72,4 +67,4 @@ module.exports = async (req, res) => {
             stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
-};
+}
