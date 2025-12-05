@@ -1,0 +1,14 @@
+{
+    "name": "door-site",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "echo 'No build step required'"
+    },
+    "dependencies": {
+        "google-auth-library": "^10.5.0",
+        "google-spreadsheet": "^4.1.5"
+    },
+    "engines": {
+        "node": "18.x"
+    }
+}
