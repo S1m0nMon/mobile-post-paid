@@ -29,7 +29,15 @@ module.exports = async (req, res) => {
         // Validate Environment Variables
         if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEET_ID) {
             console.error('Missing Environment Variables');
-            throw new Error('Missing required environment variables. Check Vercel Settings.');
+            return res.status(500).json({
+                error: 'Configuration error',
+                message: 'Missing required environment variables. Check Vercel Settings.',
+                details: {
+                    hasEmail: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+                    hasKey: !!process.env.GOOGLE_PRIVATE_KEY,
+                    hasSheetId: !!process.env.GOOGLE_SHEET_ID
+                }
+            });
         }
 
         // Initialize doc - google-spreadsheet v4 syntax
@@ -57,7 +65,7 @@ module.exports = async (req, res) => {
         res.status(500).json({
             error: 'Internal server error',
             message: error.message,
-            stack: error.stack
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
