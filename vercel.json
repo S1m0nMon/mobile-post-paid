@@ -1,7 +1,0 @@
-{
-    "functions": {
-        "api/register.js": {
-            "runtime": "nodejs20.x"
-        }
-    }
-}
